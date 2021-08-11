@@ -17,28 +17,33 @@
 package com.example.android.guesstheword.pantallas.juego
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.example.android.guesstheword.R
 import com.example.android.guesstheword.databinding.JuegoFragmentBinding
 
 /**
  * Fragment where the game is played
+ * Aqui debe de ir lo que tenga que ver con
+ * logica, variables, datos
  */
 class JuegoFragment : Fragment() {
 
-    // The current word
-    private var palabra = ""
 
-    // The current score
-    private var puntuacion = 0
+    /**
+     *Aqui inicializamos unicamente una variable de tipo ViewModel
+     ***/
+    lateinit var vistaModelo: JuegoViewModel
 
-    // The list of words - the front of the list is the next word to guess
-    private lateinit var listaDePalabras: MutableList<String>
+
+
+
 
     private lateinit var binding: JuegoFragmentBinding
 
@@ -53,11 +58,29 @@ class JuegoFragment : Fragment() {
                 false
         )
 
-        reiniciarLista()
-        siguientePalabra()
 
-        binding.loConseguisteButton.setOnClickListener { clickLoConseguiste() }
-        binding.omitirButton.setOnClickListener { clickOmitir() }
+        /**
+         * Variable que conecta con el JuegoViewModel para a traves de la variable
+         * vistaModelo antreriormente declarada
+         * * **/
+        //Primer parametro: Contexto
+        Log.i("JuegoFragment", "ViewModelProvider LLamado!!")
+ /**
+  *Esta linea siguiente es el vinculo con la logica o accion del botton con la clase JuegoViewModel
+  *  **/
+        vistaModelo = ViewModelProvider(this).get(JuegoViewModel::class.java)
+
+
+        binding.loConseguisteButton.setOnClickListener {
+            vistaModelo.clickLoConseguiste()
+            actualizarTextoDePalabra()
+            actualizarTextoDePuntuacion()
+        }
+        binding.omitirButton.setOnClickListener {
+            vistaModelo.clickOmitir()
+            actualizarTextoDePalabra()
+            actualizarTextoDePuntuacion()
+            }
         actualizarTextoDePuntuacion()
         actualizarTextoDePalabra()
         return binding.root
@@ -67,75 +90,33 @@ class JuegoFragment : Fragment() {
     /**
      * Resets the list of words and randomizes the order
      */
-    private fun reiniciarLista() {
-        listaDePalabras = mutableListOf(
-                "princesa",
-                "hospital",
-                "baloncesto",
-                "gato",
-                "monedas",
-                "perro",
-                "sopa",
-                "calendario",
-                "triste",
-                "escritorio",
-                "guitarra",
-                "casa",
-                "carretera",
-                "elefante",
-                "llanta",
-                "carro",
-                "silla",
-                "teléfono",
-                "bolsa",
-                "botella",
-                "arma"
-        )
-        listaDePalabras.shuffle()
-    }
+
 
     /**
      * Called when the game is finished
      */
     private fun juegoTerminado() {
-        val action = JuegoFragmentDirections.actionGameToScore(puntuacion)
+        val action = JuegoFragmentDirections.actionGameToScore(vistaModelo.puntuacion)
         findNavController(this).navigate(action)
     }
 
     /**
      * Moves to the next word in the list
      */
-    private fun siguientePalabra() {
-        //Select and remove a word from the list
-        if (listaDePalabras.isEmpty()) {
-            juegoTerminado()
-        } else {
-            palabra = listaDePalabras.removeAt(0)
-        }
-        actualizarTextoDePalabra()
-        actualizarTextoDePuntuacion()
-    }
+
 
     /** Methods for buttons presses **/
 
-    private fun clickOmitir() {
-        puntuacion--
-        siguientePalabra()
-    }
 
-    private fun clickLoConseguiste() {
-        puntuacion++
-        siguientePalabra()
-    }
 
     /** Methods for updating the UI **/
 
     private fun actualizarTextoDePalabra() {
-        binding.palabraText.text = palabra
+        binding.palabraText.text = vistaModelo.palabra
 
     }
 
     private fun actualizarTextoDePuntuacion() {
-        binding.puntuacionText.text = puntuacion.toString()
+        binding.puntuacionText.text = vistaModelo.puntuacion.toString()
     }
 }
